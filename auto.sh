@@ -11,10 +11,28 @@ function decode {
 }
 
 function route {
-    if [ "$1" == "yt" ]; then
+    if [ "$1" == "luckyyt" ]; then
 		echo "Listening: "$(decode $2)
         nohup bash firefox-remote.sh $2 > /dev/null &
 		cat index.html
+	elif [ "$1" == "searchyt" ]; then
+		# find search results
+		# todo: bash script injection here with $2
+		SEARCH_URL="https://www.youtube.com/results?search_query=$2"
+		VIDS=$(curl $SEARCH_URL |\
+        grep "/watch?v=" |\
+        grep -o "watch?v=[A-Za-z0-9_]\{11,11\}" |\
+        sed "s/\s*watch?v=\s*//g" |\
+        uniq |\
+        sed "s/\s//g" |\
+        uniq |\
+        xargs -I {} \
+			echo "<div class='vid-result'><span class='vidurl'>{}<\/span><\/div>")
+		
+		VIDS=$(echo $VIDS)
+		
+		cat index.html | sed "s/BASHvideoSearchResults/${VIDS}/g"
+		
 	else
 		
 		cat index.html
@@ -45,15 +63,15 @@ function fn_out {
                 url3=$(echo $url | cut -d "/" -f3)
                 url4=$(echo $url | cut -d "/" -f3)
                 
-                MESSAGE=$(route $url1 $url2 $url3 $url4)
+                MESSAGE=$(route $url1 $url2 $url3 $url4 | sed "s/\n/\r\n/g")
 
-                LCOUNT=$(echo $MESSAGE | wc -c)
+                LCOUNT=$(echo "$MESSAGE" | wc -c)
                 
                 echo "Content-Length: "$LCOUNT
                 echo "Connection: close"
                 echo ""
                 
-                echo $MESSAGE
+                echo "$MESSAGE"
                 return
             else
                 lcount=$(($lcount+1))

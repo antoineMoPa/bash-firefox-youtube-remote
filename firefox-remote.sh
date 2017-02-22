@@ -25,5 +25,5 @@ sleep 5
 
 xte 'key Tab'
 
-xte 'mousemove 200 400'
+xte 'mousemove 200 300'
 xte 'mouseclick 1'
