@@ -12,3 +12,11 @@ btnSearch.onclick = function(){
     
     window.location = href;
 };
+
+var current_path = window.location.href.split("/");
+var action = current_path[current_path.length - 2];
+
+if(action == "searchyt"){
+    var search = current_path[current_path.length - 1]
+    input.value = decodeURI(search);
+}

@@ -12,10 +12,12 @@ function decode {
 
 function route {
 	if [ "$1" == "js.js" ]; then
-		cat js.js
+		reply "200 OK" "text/javascript" < <(cat js.js)
+	elif [ "$1" == "css.css" ]; then
+		reply "200 OK" "text/css" < <(cat css.css)
 	elif [ "$1" == "yt" ]; then
 		nohup bash firefox-remote.sh $2 > /dev/null &
-		cat index.html
+		reply "200 OK" "text/html" < <(cat index.html)
 	elif [ "$1" == "searchyt" ]; then
 		# find search results
 		# todo: bash script injection here with $2
@@ -23,12 +25,12 @@ function route {
 		VIDSDATA=$(curl "$SEARCH_URL")
 		
 		VIDSLIST=$(echo "${VIDSDATA}" |\
-        grep "/watch?v=" |\
-        grep -o "watch?v=[A-Za-z0-9_]\{11,11\}" |\
-        sed "s/\s*watch?v=\s*//g" |\
-        uniq |\
-        sed "s/\s//g" |\
-        uniq)
+						  grep "/watch?v=" |\
+						  grep -o "watch?v=[A-Za-z0-9_]\{11,11\}" |\
+						  sed "s/\s*watch?v=\s*//g" |\
+						  uniq |\
+						  sed "s/\s//g" |\
+						  uniq)
 		
 		while read vidid; do
 			TITLE=$(echo "${VIDSDATA}" | grep "$vidid" | grep -v "<button" |  sed "s/title=\"\([^\"]*\)/\nTHETITLE=\1\n/" | grep THETITLE | sed "s/THETITLE=//g")
@@ -44,12 +46,38 @@ function route {
 		# put on one line
 		VIDS=$(echo $VIDSHTML)
 		
-		cat index.html | sed 's#BASHvideoSearchResults#'"${VIDS}"'#g'
+		reply "200 OK" "text/html" < <(cat index.html | sed 's#BASHvideoSearchResults#'"${VIDS}"'#g')
 		
 	else
-		
-		cat index.html
+		reply "404 NOT FOUND" "text/html" < <(cat index.html)
     fi
+}
+
+# give http reply
+# $1 code
+# $2 content type
+# stdin message
+function reply {
+	echo "HTTP/1.1 $1"
+    echo "Content-type: $2"
+    echo "Content-Encoding: UTF-8"
+
+	MESSAGE=""
+
+	while read line; do
+		MESSAGE="${MESSAGE}"$'\r'$'\n'$line
+	done
+	
+	echo "${MESSAGE}" > msg.txt
+	#MESSAGE=$(echo "${MESSAGE}" | sed "s/\n/\r\n/g")
+	
+    LCOUNT=$(echo "${MESSAGE}" | wc -c)
+	
+    echo "Content-Length: "$LCOUNT
+    echo "Connection: close"
+    echo ""
+    
+    echo "${MESSAGE}"
 }
 
 function fn_out {
@@ -65,26 +93,14 @@ function fn_out {
             REQ="${REQ}${line}"
             
             if [ -z "${line}" ]; then
-                echo "HTTP/1.1 200 OK"
-                echo "Content-type: text/html"
-                echo "Content-Encoding: UTF-8"
-                
-                MESSAGE="SUCCESS "$(date)$'\n'
                 
                 url1=$(echo $url | cut -d "/" -f2)
                 url2=$(echo $url | cut -d "/" -f3)
                 url3=$(echo $url | cut -d "/" -f3)
                 url4=$(echo $url | cut -d "/" -f3)
-                
-                MESSAGE=$(route $url1 $url2 $url3 $url4 | sed "s/\n/\r\n/g")
+				
+                route $url1 $url2 $url3 $url4 
 
-                LCOUNT=$(echo "$MESSAGE" | wc -c)
-                
-                echo "Content-Length: "$LCOUNT
-                echo "Connection: close"
-                echo ""
-                
-                echo "$MESSAGE"
                 return
             else
                 lcount=$(($lcount+1))
@@ -117,7 +133,8 @@ function fn_in {
 }
 
 function serve {
-    nc -l 4000 0< <(fn_out) 1> >(fn_in)
+    echo "listening at port 4000"
+    nc -l -p 4000 0< <(fn_out) 1> >(fn_in)
     serve
 }
 
