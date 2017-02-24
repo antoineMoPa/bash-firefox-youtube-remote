@@ -9,41 +9,12 @@
     <input type="text" class="search-field" value="">
     <br>
     <button class="search-yt">Search Youtube</button>
-    <button class="go-first">First youtube video</button>
     
     <div class="search-results">
       BASHvideoSearchResults
     </div>
 
 
-    <script>
-
-var input = document.querySelectorAll(".search-field")[0];
-var btn = document.querySelectorAll(".go-first")[0];
-var btnSearch = document.querySelectorAll(".search-yt")[0];
-
-btnSearch.onclick = function(){
-    var vid = input.value;
-    var href = window.location.protocol +
-	"//" +
-	window.location.host +
-	"/searchyt/" + 
-	vid;
-    
-    window.location = href;
-};
-
-btn.onclick = function(){
-    var vid = input.value;
-    var href = window.location.protocol +
-	"//" +
-	window.location.host +
-	"/luckyyt/" + 
-	vid;
-    
-    window.location = href;
-};
-
-</script>
+    <script src="/js.js"></script>
   </body>
 </html>

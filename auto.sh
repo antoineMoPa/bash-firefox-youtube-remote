@@ -11,27 +11,40 @@ function decode {
 }
 
 function route {
-    if [ "$1" == "luckyyt" ]; then
-		echo "Listening: "$(decode $2)
-        nohup bash firefox-remote.sh $2 > /dev/null &
+	if [ "$1" == "js.js" ]; then
+		cat js.js
+	elif [ "$1" == "yt" ]; then
+		nohup bash firefox-remote.sh $2 > /dev/null &
 		cat index.html
 	elif [ "$1" == "searchyt" ]; then
 		# find search results
 		# todo: bash script injection here with $2
 		SEARCH_URL="https://www.youtube.com/results?search_query=$2"
-		VIDS=$(curl $SEARCH_URL |\
+		VIDSDATA=$(curl "$SEARCH_URL")
+		
+		VIDSLIST=$(echo "${VIDSDATA}" |\
         grep "/watch?v=" |\
         grep -o "watch?v=[A-Za-z0-9_]\{11,11\}" |\
         sed "s/\s*watch?v=\s*//g" |\
         uniq |\
         sed "s/\s//g" |\
-        uniq |\
-        xargs -I {} \
-			echo "<div class='vid-result'><span class='vidurl'>{}<\/span><\/div>")
+        uniq)
 		
-		VIDS=$(echo $VIDS)
+		while read vidid; do
+			TITLE=$(echo "${VIDSDATA}" | grep "$vidid" | grep -v "<button" |  sed "s/title=\"\([^\"]*\)/\nTHETITLE=\1\n/" | grep THETITLE | sed "s/THETITLE=//g")
+			VIDSHTML="${VIDSHTML}"'\n'"<div class='vid-result'>\
+<a class='one-vid' href='/yt/$vidid'>\
+<img src='https://i.ytimg.com/vi/$vidid/default.jpg'>\
+<span class='vidtitle'>$TITLE<\/span>\
+</a>\
+<\/div>"
+			
+		done < <( echo "$VIDSLIST" )
+   		
+		# put on one line
+		VIDS=$(echo $VIDSHTML)
 		
-		cat index.html | sed "s/BASHvideoSearchResults/${VIDS}/g"
+		cat index.html | sed 's#BASHvideoSearchResults#'"${VIDS}"'#g'
 		
 	else
 		
