@@ -1,6 +1,32 @@
 input{
     margin:10px;
 }
+
 button{
     margin:10px;
 }
+
+.vid-result{
+    margin-top:10px;
+}
+
+.vid-result:active{
+    background:#eee;
+}
+
+.one-vid{
+    display:table-row;
+    text-decoration:none;
+    font-family:sans-serif;
+}
+
+.one-vid img, .one-vid .vidtitle{
+    display:table-cell;
+    vertical-align:middle;
+}
+
+.one-vid .vidtitle{
+    padding-left:20px;
+    
+}
+
