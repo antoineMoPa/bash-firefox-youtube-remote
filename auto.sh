@@ -65,13 +65,10 @@ function reply {
 	MESSAGE=""
 
 	while read line; do
-		MESSAGE="${MESSAGE}"$'\r'$'\n'$line
+		MESSAGE="${MESSAGE}""${line}"$'\r\n'
 	done
-	
-	echo "${MESSAGE}" > msg.txt
-	#MESSAGE=$(echo "${MESSAGE}" | sed "s/\n/\r\n/g")
-	
-    LCOUNT=$(echo "${MESSAGE}" | wc -c)
+
+    LCOUNT=$(echo "$MESSAGE" | wc -c)
 	
     echo "Content-Length: "$LCOUNT
     echo "Connection: close"
@@ -98,7 +95,8 @@ function fn_out {
                 url2=$(echo $url | cut -d "/" -f3)
                 url3=$(echo $url | cut -d "/" -f3)
                 url4=$(echo $url | cut -d "/" -f3)
-				
+
+				# route and reply
                 route $url1 $url2 $url3 $url4 
 
                 return
