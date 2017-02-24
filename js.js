@@ -2,7 +2,7 @@ var input = document.querySelectorAll(".search-field")[0];
 
 var btnSearch = document.querySelectorAll(".search-yt")[0];
 
-btnSearch.onclick = function(){
+btnSearch.addEventListener("click", function(){
     var vid = input.value;
     var href = window.location.protocol +
 	"//" +
@@ -20,3 +20,5 @@ if(action == "searchyt"){
     var search = current_path[current_path.length - 1]
     input.value = decodeURI(search);
 }
+
+

@@ -45,11 +45,11 @@ function route {
    		
 		# put on one line
 		VIDS=$(echo $VIDSHTML)
-		
-		reply "200 OK" "text/html" < <(cat index.html | sed 's#BASHvideoSearchResults#'"${VIDS}"'#g')
+		OUTPUT=$(cat index.html) # | sed 's#BASHvideoSearchResults#'"$VIDS"'#g')
+		reply "200 OK" "text/html" < <(echo "${OUTPUT}")
 		
 	else
-		reply "404 NOT FOUND" "text/html" < <(cat index.html)
+		reply "200 OK" "text/html" < <(cat index.html)
     fi
 }
 
